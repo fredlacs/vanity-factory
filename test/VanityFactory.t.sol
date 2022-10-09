@@ -3,6 +3,7 @@ pragma solidity 0.8.16;
 
 import "forge-std/Test.sol";
 import "openzeppelin-contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-contracts/utils/Create2.sol";
 import "../src/VanityFactory.sol";
 import "../src/ZeroScorer.sol";
 
@@ -10,7 +11,7 @@ contract VanityFactoryTest is Test {
     VanityFactory factory;
     ZeroScorer scorer;
 
-    constructor() {
+    function setUp() public {
         factory = new VanityFactory();
         scorer = new ZeroScorer();
     }
@@ -23,7 +24,7 @@ contract VanityFactoryTest is Test {
 
         uint256 endTime = block.timestamp + 5 days;
         uint256 reward = 1 ether;
-        uint256 minScore = 5;
+        uint256 minScore = 4;
 
         factory.ask{value: reward}(scorer, initCodeHash, endTime, minScore);
 
@@ -72,7 +73,8 @@ contract VanityFactoryTest is Test {
         address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         vm.prank(miner);
 
-        vm.expectRevert("VanityFactory: not high enough score");
+        address expectedMinedAddress = Create2.computeAddress(salt, initCodeHash, address(factory));
+        if (scorer.score(expectedMinedAddress) <= minScore) vm.expectRevert("VanityFactory: not high enough score");
         factory.submit(initCodeHash, salt);
     }
 }
