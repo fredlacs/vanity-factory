@@ -28,12 +28,11 @@ contract VanityFactory {
         require(pendingDeploys[initCodeHash].endTime == 0, "VanityFactory: already created pending deploy");
         require(msg.value > 0, "VanityFactory: no reward set");
         require(endTime > block.timestamp, "VanityFactory: endTime before timestamp");
-        uint256 minScoreWinner = minScore == 0 ? 0 : minScore - 1;
         pendingDeploys[initCodeHash] = Context({
             scorer: scorer,
             initCodeHash: initCodeHash,
             salt: bytes32(bytes20(msg.sender)),
-            minScoreWinner: minScoreWinner,
+            minScoreWinner: minScore,
             endTime: endTime,
             reward: msg.value
         });
@@ -48,7 +47,7 @@ contract VanityFactory {
         address minedAddress = Create2.computeAddress(salt, ctx.initCodeHash);
         uint256 score = ctx.scorer.score(minedAddress);
         uint256 minScoreWinner = ctx.minScoreWinner;
-        require(score > minScoreWinner || minScoreWinner == 0, "VanityFactory: not high enough score");
+        require(score > minScoreWinner, "VanityFactory: not high enough score");
 
         ctx.minScoreWinner = score;
         ctx.salt = salt;
