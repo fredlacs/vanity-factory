@@ -5,7 +5,6 @@ import "openzeppelin-contracts/utils/Create2.sol";
 import "./IScorer.sol";
 
 contract VanityFactory {
-    // TODO: include deployAndCall maybe?
     struct Context {
         IScorer scorer;
         bytes32 initCodeHash;
@@ -16,25 +15,24 @@ contract VanityFactory {
     }
 
     event Asked(
-        uint256 deployId,
         IScorer scorer,
         bytes32 initCodeHash,
-        bytes32 salt,
         uint256 minScoreWinner,
         uint256 endTime,
         uint256 reward
     );
 
-    event Submited(uint256 deployId, uint256 score, bytes32 salt, address minedAddress);
+    event Submited(uint256 score, bytes32 salt, address minedAddress);
 
-    event Deployed(uint256 deployId, address minedAddress);
+    event Deployed(address minedAddress);
 
-    Context[] public deploys;
+    mapping(bytes32 => Context) public pendingDeploys;
 
     function ask(IScorer scorer, bytes32 initCodeHash, uint256 endTime) external payable returns (uint256 id) {
+        require(pendingDeploys[initCodeHash].endTime == 0, "VanityFactory: already created pending deploy");
         require(msg.value > 0, "VanityFactory: no reward set");
         require(endTime > block.timestamp, "VanityFactory: endTime before timestamp");
-        Context memory ctx = Context({
+        pendingDeploys[initCodeHash] = Context({
             scorer: scorer,
             initCodeHash: initCodeHash,
             salt: bytes32(bytes20(msg.sender)),
@@ -42,13 +40,11 @@ contract VanityFactory {
             endTime: endTime,
             reward: msg.value
         });
-        id = deploys.length;
-        deploys.push(ctx);
-        emit Asked(id, ctx.scorer, ctx.initCodeHash, ctx.salt, ctx.minScoreWinner, ctx.endTime, ctx.reward);
+        emit Asked(scorer, initCodeHash, 0, endTime, msg.value);
     }
 
-    function submit(uint256 id, bytes32 salt) external {
-        Context storage ctx = deploys[id];
+    function submit(bytes32 initCodeHash, bytes32 salt) external {
+        Context storage ctx = pendingDeploys[initCodeHash];
         require(block.timestamp < ctx.endTime, "VanityFactory: bid time ended");
         address minedAddress = Create2.computeAddress(salt, ctx.initCodeHash);
         uint256 score = ctx.scorer.score(minedAddress);
@@ -57,19 +53,22 @@ contract VanityFactory {
         ctx.minScoreWinner = score;
         ctx.salt = salt;
 
-        emit Submited(id, score, salt, minedAddress);
+        emit Submited(score, salt, minedAddress);
     }
 
-    function deploy(uint256 id, bytes calldata initCode) external {
-        Context storage ctx = deploys[id];
+    function deploy(bytes calldata initCode) external {
+        bytes32 initCodeHash = keccak256(initCode);
+        Context memory ctx = pendingDeploys[initCodeHash];
+        require(ctx.endTime != 0, "VanityFactory: not valid pending deploy");
         require(block.timestamp > ctx.endTime, "VanityFactory: bid time not yet ended");
-        require(keccak256(initCode) == ctx.initCodeHash, "VanityFactory: wrong init code hash");
-
         address winner = address(bytes20(ctx.salt));
+
+        delete pendingDeploys[initCodeHash];
+
         (bool res,) = payable(winner).call{value: ctx.reward}("");
         require(res, "VanityFactory: reward send fail");
 
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
-        emit Deployed(id, minedAddress);
+        emit Deployed(minedAddress);
     }
 }
