@@ -14,17 +14,11 @@ contract VanityFactory {
         uint256 reward;
     }
 
-    event Asked(
-        IScorer scorer,
-        bytes32 initCodeHash,
-        uint256 minScoreWinner,
-        uint256 endTime,
-        uint256 reward
-    );
+    event Asked(IScorer scorer, bytes32 indexed initCodeHash, uint256 minScoreWinner, uint256 endTime, uint256 reward);
 
-    event Submited(uint256 score, bytes32 salt, address minedAddress);
+    event Submited(bytes32 indexed initCodeHash, uint256 score, bytes32 salt, address minedAddress);
 
-    event Deployed(address minedAddress);
+    event Deployed(bytes32 indexed initCodeHash, address minedAddress);
 
     mapping(bytes32 => Context) public pendingDeploys;
 
@@ -53,7 +47,7 @@ contract VanityFactory {
         ctx.minScoreWinner = score;
         ctx.salt = salt;
 
-        emit Submited(score, salt, minedAddress);
+        emit Submited(initCodeHash, score, salt, minedAddress);
     }
 
     function deploy(bytes calldata initCode) external {
@@ -69,6 +63,6 @@ contract VanityFactory {
         winner.call{value: ctx.reward}("");
 
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
-        emit Deployed(minedAddress);
+        emit Deployed(initCodeHash, minedAddress);
     }
 }
