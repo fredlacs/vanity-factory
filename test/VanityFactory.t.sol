@@ -12,12 +12,9 @@ contract VanityFactoryTest is Test {
     ZeroScorer scorer;
 
     function setUp() public {
-        factory = VanityFactory(address(0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45));
-        vm.etch(address(factory), address(new VanityFactory()).code);
-
+        factory = new VanityFactory();
         scorer = new ZeroScorer();
     }
-
 
     function testCanCreateAndClaimBounty() public {
         bytes memory deploymentData = abi.encode(type(ERC20).creationCode, "Testy", "TST");
@@ -37,14 +34,14 @@ contract VanityFactoryTest is Test {
         address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         vm.prank(miner);
 
-        bytes32 salt = 0x00000000000000000026cf80DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        bytes32 salt = 0x000000000000000000029ae4DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         factory.submit(initCodeHash, salt);
 
         vm.warp(endTime + 1 days);
 
         factory.deploy(deploymentData);
 
-        ERC20 deployed = ERC20(address(0x0000091B0604b834fD8e7652abea325FAF5a875D));
+        ERC20 deployed = ERC20(address(0x000000D41e48506dd46a927CC7946F8cdF19003d));
         assertEq(deployed.name(), "Testy", "Testy token not deployed");
     }
 }

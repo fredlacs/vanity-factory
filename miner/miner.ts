@@ -38,7 +38,7 @@ class AddressMiner {
 
 const a = new AddressMiner(
   "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
-  "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
+  "0xCe71065D4017F316EC606Fe4422e11eB2c47c246",
   "0x6e6e07ece4a5117ed3a7fd5ea290e3919cbe5526656b80c824420ed397c4ae4e", // erc20 hash
   (addr) =>  addr.startsWith("0x00000")
   
