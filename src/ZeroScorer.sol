@@ -3,7 +3,7 @@ pragma solidity ^0.8.13;
 
 import "./IScorer.sol";
 
-contract ZeroScorer {
+contract ZeroScorer is IScorer {
     function score(address input) external pure returns (uint256 res) {
         for (uint256 i = 0; i < 20; i++) {
             if (bytes20(input)[i] == 0x00) {
