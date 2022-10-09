@@ -42,7 +42,9 @@ contract VanityFactory {
 
     function submit(bytes32 initCodeHash, bytes32 salt) external {
         Context storage ctx = pendingDeploys[initCodeHash];
-        require(block.timestamp < ctx.endTime, "VanityFactory: bid time ended");
+        uint256 endTime = ctx.endTime;
+        require(endTime != 0, "VanityFactory: not valid pending deploy");
+        require(block.timestamp < endTime, "VanityFactory: bid time ended");
         address minedAddress = Create2.computeAddress(salt, ctx.initCodeHash);
         uint256 score = ctx.scorer.score(minedAddress);
         uint256 minScoreWinner = ctx.minScoreWinner;
