@@ -23,7 +23,7 @@ contract VanityFactoryTest is Test {
 
         uint256 endTime = block.timestamp + 5 days;
         uint256 reward = 1 ether;
-        uint256 minScore = 4;
+        uint256 minScore = 5;
 
         factory.ask{value: reward}(scorer, initCodeHash, endTime, minScore);
 
@@ -55,6 +55,23 @@ contract VanityFactoryTest is Test {
         vm.prank(miner);
 
         bytes32 salt = 0x000000000000000000071a97DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        vm.expectRevert("VanityFactory: not high enough score");
+        factory.submit(initCodeHash, salt);
+    }
+
+    function testMine(bytes32 salt) public {
+        bytes memory deploymentData = bytes.concat(type(ERC20).creationCode, abi.encode("Testy", "TST"));
+        bytes32 initCodeHash = keccak256(deploymentData);
+
+        uint256 endTime = block.timestamp + 5 days;
+        uint256 reward = 1 ether;
+        uint256 minScore = 5;
+
+        factory.ask{value: reward}(scorer, initCodeHash, endTime, minScore);
+
+        address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        vm.prank(miner);
+
         vm.expectRevert("VanityFactory: not high enough score");
         factory.submit(initCodeHash, salt);
     }
