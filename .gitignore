@@ -1,6 +1,7 @@
 # Compiler files
 cache/
 out/
+miner/node_modules
 
 # Ignores development broadcast logs
 !/broadcast
