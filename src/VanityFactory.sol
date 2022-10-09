@@ -34,7 +34,7 @@ contract VanityFactory {
     function ask(Context calldata ctx) external payable returns (uint256 id) {
         require(ctx.reward > 0, "VanityFactory: no reward set");
         require(msg.value >= ctx.reward, "VanityFactory: not enough reward sent");
-        require(ctx.salt == bytes32(0), "VanityFactory: initial salt not zero");
+        require(ctx.salt == bytes32(bytes20(msg.sender)), "VanityFactory: initial salt not zero");
         id = deploys.length;
         deploys.push(ctx);
         emit Asked(id, ctx.scorer, ctx.initCodeHash, ctx.salt, ctx.minScoreWinner, ctx.endTime, ctx.reward);
@@ -47,12 +47,8 @@ contract VanityFactory {
         uint256 score = ctx.scorer.score(minedAddress);
         require(score >= ctx.minScoreWinner, "VanityFactory: not high enough score");
 
-        ctx.endTime = block.timestamp;
+        ctx.minScoreWinner = score;
         ctx.salt = salt;
-
-        address winner = address(bytes20(salt));
-        (bool res,) = payable(winner).call{value: ctx.reward}("");
-        require(res, "VanityFactory: reward send fail");
 
         emit Submited(id, score, salt, minedAddress);
     }
@@ -61,6 +57,11 @@ contract VanityFactory {
         Context storage ctx = deploys[id];
         require(block.timestamp > ctx.endTime, "VanityFactory: bid time ended");
         require(keccak256(initCode) == ctx.initCodeHash, "VanityFactory: wrong init code hash");
+
+        address winner = address(bytes20(ctx.salt));
+        (bool res,) = payable(winner).call{value: ctx.reward}("");
+        require(res, "VanityFactory: reward send fail");
+
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
         emit Deployed(id, minedAddress);
     }
