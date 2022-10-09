@@ -1,6 +1,6 @@
-# Vanity Factory
+# VanityFactory
 
-VanityFactory allow one to issue bounty for vanity address using CREATE2 pattern
+VanityFactory allow one to issue bounty for vanity address. Miner can mine the salt used for the CREATE2 deployment and the highest scored submission will receive the bounty after the deadline. To prevent frontrunning, the first 20 bytes of the salt will be the miner's address (which will receive the bounty).
 
 ## How To Request
 
