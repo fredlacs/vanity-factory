@@ -40,4 +40,22 @@ contract VanityFactoryTest is Test {
         ERC20 deployed = ERC20(address(0x00000bbEc92598358Bce4d71f9B5382CE9CCf254));
         assertEq(deployed.name(), "Testy", "Testy token not deployed");
     }
+
+    function testCannotSubmitBelowMinScore() public {
+        bytes memory deploymentData = bytes.concat(type(ERC20).creationCode, abi.encode("Testy", "TST"));
+        bytes32 initCodeHash = keccak256(deploymentData);
+
+        uint256 endTime = block.timestamp + 5 days;
+        uint256 reward = 1 ether;
+        uint256 minScore = 8;
+
+        factory.ask{value: reward}(scorer, initCodeHash, endTime, minScore);
+
+        address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        vm.prank(miner);
+
+        bytes32 salt = 0x000000000000000000071a97DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        vm.expectRevert("VanityFactory: not high enough score");
+        factory.submit(initCodeHash, salt);
+    }
 }
