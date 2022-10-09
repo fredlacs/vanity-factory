@@ -56,19 +56,21 @@ contract VanityFactory {
         emit Submited(initCodeHash, score, salt, minedAddress);
     }
 
-    function deploy(bytes calldata initCode) external {
-        bytes32 initCodeHash = keccak256(initCode);
-        Context memory ctx = pendingDeploys[initCodeHash];
-        require(ctx.endTime != 0, "VanityFactory: not valid pending deploy");
+    function claim(bytes32 initCodeHash) external {
+        Context storage ctx = pendingDeploys[initCodeHash];
         require(block.timestamp > ctx.endTime, "VanityFactory: bid time not yet ended");
         address winner = address(bytes20(ctx.salt));
+        uint256 reward = ctx.reward;
+        ctx.reward = 0;
+        (bool success,) = winner.call{value: reward}("");
+        require(success, "VanityFactory: fail claim reward");
+        emit Rewarded(initCodeHash, winner, reward);
+    }
 
-        delete pendingDeploys[initCodeHash];
-
-        // we don't really care if this fails
-        (bool success,) = winner.call{value: ctx.reward}("");
-        if (success) emit Rewarded(initCodeHash, winner, ctx.reward);
-
+    function deploy(bytes calldata initCode) external {
+        bytes32 initCodeHash = keccak256(initCode);
+        Context storage ctx = pendingDeploys[initCodeHash];
+        require(block.timestamp > ctx.endTime, "VanityFactory: bid time not yet ended");
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
         emit Deployed(initCodeHash, minedAddress);
     }
