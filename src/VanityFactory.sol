@@ -31,10 +31,17 @@ contract VanityFactory {
 
     Context[] public deploys;
 
-    function ask(Context calldata ctx) external payable returns (uint256 id) {
-        require(ctx.reward > 0, "VanityFactory: no reward set");
-        require(msg.value >= ctx.reward, "VanityFactory: not enough reward sent");
-        require(ctx.salt == bytes32(bytes20(msg.sender)), "VanityFactory: initial salt not address");
+    function ask(IScorer scorer, bytes32 initCodeHash, uint256 endTime) external payable returns (uint256 id) {
+        require(msg.value > 0, "VanityFactory: no reward set");
+        require(endTime > block.timestamp, "VanityFactory: endTime before timestamp");
+        Context memory ctx = Context({
+            scorer: scorer,
+            initCodeHash: initCodeHash,
+            salt: bytes32(bytes20(msg.sender)),
+            minScoreWinner: 0,
+            endTime: endTime,
+            reward: msg.value
+        });
         id = deploys.length;
         deploys.push(ctx);
         emit Asked(id, ctx.scorer, ctx.initCodeHash, ctx.salt, ctx.minScoreWinner, ctx.endTime, ctx.reward);
@@ -55,7 +62,7 @@ contract VanityFactory {
 
     function deploy(uint256 id, bytes calldata initCode) external {
         Context storage ctx = deploys[id];
-        require(block.timestamp > ctx.endTime, "VanityFactory: bid time ended");
+        require(block.timestamp > ctx.endTime, "VanityFactory: bid time not yet ended");
         require(keccak256(initCode) == ctx.initCodeHash, "VanityFactory: wrong init code hash");
 
         address winner = address(bytes20(ctx.salt));
