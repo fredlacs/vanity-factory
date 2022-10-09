@@ -1,5 +1,5 @@
 import "ethers";
-import { BigNumber, ethers } from "ethers";
+import { ethers } from "ethers";
 import { arrayify } from "ethers/lib/utils";
 
 class AddressMiner {
@@ -25,7 +25,7 @@ class AddressMiner {
         this.initCodeHash
       );
 
-      if(this.criteria(addr)) return salt;
+      if (this.criteria(addr)) return salt;
     }
 
     throw new Error("Max index reached.");
@@ -35,6 +35,6 @@ class AddressMiner {
 const a = new AddressMiner(
   "0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5",
   "0x68b3465833fb72a70ecdf485e0e4c7bd8665fc45",
-  "0x10c927fa851e18ba5b0e93e7249cd727bfa621da83e2ae14bb00ce88b71c6955",
-  () => true
+  "0x906e1c57281f7ecdb765ba6b964f4d641aa3ec648e6775ed9006589aaad5b135", // erc20 hash
+  (addr) => addr.startsWith("0x000000")
 );
