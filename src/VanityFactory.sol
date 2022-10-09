@@ -20,6 +20,8 @@ contract VanityFactory {
 
     event Deployed(bytes32 indexed initCodeHash, address minedAddress);
 
+    event Rewarded(bytes32 indexed initCodeHash, address winner, uint256 reward);
+
     mapping(bytes32 => Context) public pendingDeploys;
 
     function ask(IScorer scorer, bytes32 initCodeHash, uint256 endTime) external payable {
@@ -60,7 +62,8 @@ contract VanityFactory {
         delete pendingDeploys[initCodeHash];
 
         // we don't really care if this fails
-        winner.call{value: ctx.reward}("");
+        (bool success,) = winner.call{value: ctx.reward}("");
+        if (success) emit Rewarded(initCodeHash, winner, ctx.reward);
 
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
         emit Deployed(initCodeHash, minedAddress);
