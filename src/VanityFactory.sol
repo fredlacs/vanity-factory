@@ -65,8 +65,8 @@ contract VanityFactory {
 
         delete pendingDeploys[initCodeHash];
 
-        (bool res,) = winner.call{value: ctx.reward}("");
-        require(res, "VanityFactory: reward send fail");
+        // we don't really care if this fails
+        winner.call{value: ctx.reward}("");
 
         address minedAddress = Create2.deploy(0, ctx.salt, initCode);
         emit Deployed(minedAddress);
