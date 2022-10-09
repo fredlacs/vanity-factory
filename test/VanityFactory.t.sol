@@ -6,7 +6,6 @@ import "openzeppelin-contracts/token/ERC20/ERC20.sol";
 import "../src/VanityFactory.sol";
 import "../src/ZeroScorer.sol";
 
-
 contract VanityFactoryTest is Test {
     VanityFactory factory;
     ZeroScorer scorer;
@@ -25,11 +24,7 @@ contract VanityFactoryTest is Test {
         uint256 endTime = block.timestamp + 5 days;
         uint256 reward = 1 ether;
 
-        factory.ask{ value: reward }(
-            scorer,
-            initCodeHash,
-            endTime
-        );
+        factory.ask{value: reward}(scorer, initCodeHash, endTime);
 
         address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         vm.prank(miner);
