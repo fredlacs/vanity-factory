@@ -31,7 +31,7 @@ contract VanityFactory {
         pendingDeploys[initCodeHash] = Context({
             scorer: scorer,
             initCodeHash: initCodeHash,
-            salt: bytes32(bytes20(msg.sender)),
+            salt: bytes32(bytes20(msg.sender)) >> 96,
             minScoreWinner: minScore,
             endTime: endTime,
             reward: msg.value
@@ -57,8 +57,10 @@ contract VanityFactory {
 
     function claim(bytes32 initCodeHash) external {
         Context storage ctx = pendingDeploys[initCodeHash];
-        require(block.timestamp > ctx.endTime, "VanityFactory: bid time not yet ended");
-        address winner = address(bytes20(ctx.salt));
+        uint256 endTime = ctx.endTime;
+        require(endTime > 0, "VanityFactory: not valid pending deploy");
+        require(block.timestamp > endTime, "VanityFactory: bid time not yet ended");
+        address winner = address(bytes20(ctx.salt << 96));
         uint256 reward = ctx.reward;
         ctx.reward = 0;
         (bool success,) = winner.call{value: reward}("");
