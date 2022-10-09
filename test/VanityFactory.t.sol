@@ -10,7 +10,7 @@ contract VanityFactoryTest is Test {
     VanityFactory factory;
     ZeroScorer scorer;
 
-    function setUp() public {
+    constructor() {
         factory = new VanityFactory();
         scorer = new ZeroScorer();
     }
@@ -23,8 +23,9 @@ contract VanityFactoryTest is Test {
 
         uint256 endTime = block.timestamp + 5 days;
         uint256 reward = 1 ether;
+        uint256 minScore = 4;
 
-        factory.ask{value: reward}(scorer, initCodeHash, endTime);
+        factory.ask{value: reward}(scorer, initCodeHash, endTime, minScore);
 
         address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         vm.prank(miner);
