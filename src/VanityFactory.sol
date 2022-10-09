@@ -22,7 +22,7 @@ contract VanityFactory {
 
     mapping(bytes32 => Context) public pendingDeploys;
 
-    function ask(IScorer scorer, bytes32 initCodeHash, uint256 endTime) external payable returns (uint256 id) {
+    function ask(IScorer scorer, bytes32 initCodeHash, uint256 endTime) external payable {
         require(pendingDeploys[initCodeHash].endTime == 0, "VanityFactory: already created pending deploy");
         require(msg.value > 0, "VanityFactory: no reward set");
         require(endTime > block.timestamp, "VanityFactory: endTime before timestamp");
