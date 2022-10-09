@@ -1,4 +1,21 @@
+# Vanity Factory
 
-Future improvements:
+VanityFactory allow one to issue bounty for vanity address using CREATE2 pattern
+
+## How To Request
+
+Send ether to `VanityFactory.ask(...)` with the contract inithash, desired scorer, deadline and minimum score required
+
+## How To Mine
+
+- Option 1
+
+  ```npx ts-node ./miner/miner.ts```
+
+- Option 2
+
+  ```FOUNDRY_FUZZ_RUNS=99999999 forge test -vvv```
+
+## TODO
  - Use unique deployers instead of mapping with init code hash as key
  - Include option to `deployAndCall` for things such as initialize
