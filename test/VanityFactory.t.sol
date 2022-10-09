@@ -17,10 +17,10 @@ contract VanityFactoryTest is Test {
     }
 
     function testCanCreateAndClaimBounty() public {
-        bytes memory deploymentData = abi.encode(type(ERC20).creationCode, "Testy", "TST");
+        bytes memory deploymentData = bytes.concat(type(ERC20).creationCode, abi.encode("Testy", "TST"));
         bytes32 initCodeHash = keccak256(deploymentData);
 
-        assertEq(initCodeHash, 0x6e6e07ece4a5117ed3a7fd5ea290e3919cbe5526656b80c824420ed397c4ae4e, "wrong init code");
+        assertEq(initCodeHash, 0xa91ac850d836e851294d59cc0d97395c7a652b0f908e65f950532322ab0f7723, "wrong init code");
 
         uint256 endTime = block.timestamp + 5 days;
         uint256 reward = 1 ether;
@@ -34,14 +34,14 @@ contract VanityFactoryTest is Test {
         address miner = 0xDAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         vm.prank(miner);
 
-        bytes32 salt = 0x000000000000000000029ae4DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
+        bytes32 salt = 0x000000000000000000071a97DAFEA492D9c6733ae3d56b7Ed1ADB60692c98Bc5;
         factory.submit(initCodeHash, salt);
 
         vm.warp(endTime + 1 days);
 
         factory.deploy(deploymentData);
 
-        ERC20 deployed = ERC20(address(0x000000D41e48506dd46a927CC7946F8cdF19003d));
+        ERC20 deployed = ERC20(address(0x00000bbEc92598358Bce4d71f9B5382CE9CCf254));
         assertEq(deployed.name(), "Testy", "Testy token not deployed");
     }
 }
